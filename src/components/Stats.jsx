@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import MonthCalendar from './MonthCalendar'
 import { getCategoryColor, getCategoryName } from '../lib/storage'
 
 function monthKey(offset) {
@@ -8,8 +9,10 @@ function monthKey(offset) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
-export default function Stats({ monthRecords, allRecords, categories }) {
+export default function Stats({ month, monthRecords, allRecords, categories }) {
   const [view, setView] = useState('struct')
+  const [openCat, setOpenCat] = useState(null)
+  const [selectedDay, setSelectedDay] = useState(null)
 
   const years = useMemo(() => {
     const set = new Set(allRecords.map((r) => String(r.date).slice(0, 4)))
@@ -91,11 +94,17 @@ export default function Stats({ monthRecords, allRecords, categories }) {
 
   const money = (n) => (Math.round(n * 100) / 100).toFixed(2)
 
+  const dayItems = useMemo(() => {
+    if (selectedDay === null) return []
+    return monthRecords.filter((r) => Number(String(r.date).slice(8, 10)) === selectedDay)
+  }, [monthRecords, selectedDay])
+
   return (
     <div className="stats">
       <div className="view-switch">
         {[
           ['struct', '支出结构'],
+          ['daily', '每日'],
           ['trend', '月度趋势'],
           ['annual', '年度总览'],
         ].map(([key, label]) => (
@@ -124,23 +133,88 @@ export default function Stats({ monthRecords, allRecords, categories }) {
             {struct.rows.map((row) => {
               const pct = (row.value / struct.total) * 100
               const color = getCategoryColor(categories, 'expense', row.id)
+              const open = openCat === row.id
+              const items = monthRecords.filter(
+                (r) => r.type === 'expense' && r.category === row.id
+              )
               return (
-                <div className="stat-row" key={row.id}>
-                  <div className="stat-top">
-                    <span className="stat-name">
-                      {getCategoryName(categories, 'expense', row.id)}
-                    </span>
-                    <span className="stat-value">{money(row.value)}</span>
+                <div className="stat-block" key={row.id}>
+                  <div
+                    className="stat-row clickable"
+                    onClick={() => setOpenCat(open ? null : row.id)}
+                  >
+                    <div className="stat-top">
+                      <span className="stat-name">
+                        {getCategoryName(categories, 'expense', row.id)}
+                      </span>
+                      <span className="stat-value">{money(row.value)}</span>
+                    </div>
+                    <div className="bar-track">
+                      <div className="bar-fill" style={{ width: `${pct}%`, background: color }} />
+                    </div>
+                    <div className="stat-pct">
+                      {pct.toFixed(1)}% · {items.length} 笔
+                      <span className="drill-hint">{open ? '收起' : '看构成'}</span>
+                    </div>
                   </div>
-                  <div className="bar-track">
-                    <div className="bar-fill" style={{ width: `${pct}%`, background: color }} />
-                  </div>
-                  <div className="stat-pct">{pct.toFixed(1)}%</div>
+                  {open && (
+                    <div className="drill-list">
+                      {items.length === 0 ? (
+                        <div className="drill-empty">这个分类下没有单独记录</div>
+                      ) : (
+                        items.map((r) => (
+                          <div className="drill-item" key={r.id}>
+                            <span className="drill-date">{String(r.date).slice(5)}</span>
+                            <span className="drill-note">
+                              {r.note || getCategoryName(categories, 'expense', r.category)}
+                            </span>
+                            <span className="drill-amount">
+                              {(Number(r.amount) || 0).toFixed(2)}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
                 </div>
               )
             })}
           </>
         ))}
+
+      {view === 'daily' && (
+        <>
+          <MonthCalendar
+            month={month}
+            records={monthRecords}
+            selected={selectedDay}
+            onSelect={setSelectedDay}
+          />
+          {selectedDay !== null && (
+            <div className="panel" style={{ marginTop: 12 }}>
+              <div className="panel-title">
+                {Number(month.slice(5))}月{selectedDay}日 · {dayItems.length} 笔
+              </div>
+              {dayItems.length === 0 ? (
+                <div className="panel-text">这天没有记录</div>
+              ) : (
+                dayItems.map((r) => (
+                  <div className="panel-row" key={r.id}>
+                    <span>
+                      {getCategoryName(categories, r.type, r.category)}
+                      {r.note ? ` · ${r.note}` : ''}
+                    </span>
+                    <span className={r.type === 'income' ? 'income' : 'expense'}>
+                      {r.type === 'income' ? '+' : '-'}
+                      {(Number(r.amount) || 0).toFixed(2)}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </>
+      )}
 
       {view === 'trend' && (
         <>

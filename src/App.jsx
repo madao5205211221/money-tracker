@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import RecordForm from './components/RecordForm'
 import RecordList from './components/RecordList'
 import Stats from './components/Stats'
+import Debts from './components/Debts'
 import Settings from './components/Settings'
 import {
   addRecord,
@@ -14,6 +15,7 @@ import {
   saveCategories,
   saveRecords,
 } from './lib/storage'
+import { loadDebts, saveDebts } from './lib/debts'
 
 function currentMonth() {
   const d = new Date()
@@ -35,6 +37,7 @@ export default function App() {
   const [records, setRecords] = useState(() => loadRecords())
   const [categories, setCategories] = useState(() => loadCategories())
   const [budget, setBudget] = useState(() => loadBudget())
+  const [debts, setDebts] = useState(() => loadDebts())
   const [month, setMonth] = useState(currentMonth())
   const [tab, setTab] = useState('list')
   const [formOpen, setFormOpen] = useState(false)
@@ -116,6 +119,11 @@ export default function App() {
     saveCategories(next)
     setCategories(next)
     showToast('分类已保存')
+  }
+
+  const handleDebtsSave = (next) => {
+    saveDebts(next)
+    setDebts(next)
   }
 
   const commitBudget = () => {
@@ -295,7 +303,16 @@ export default function App() {
         )}
 
         {tab === 'stats' && (
-          <Stats monthRecords={monthRecords} allRecords={records} categories={categories} />
+          <Stats
+            month={month}
+            monthRecords={monthRecords}
+            allRecords={records}
+            categories={categories}
+          />
+        )}
+
+        {tab === 'debts' && (
+          <Debts debts={debts} onSave={handleDebtsSave} onToast={showToast} />
         )}
 
         {tab === 'settings' && (
@@ -321,6 +338,9 @@ export default function App() {
         </button>
         <button className={`tab ${tab === 'stats' ? 'active' : ''}`} onClick={() => setTab('stats')}>
           统计
+        </button>
+        <button className={`tab ${tab === 'debts' ? 'active' : ''}`} onClick={() => setTab('debts')}>
+          负债
         </button>
         <button
           className={`tab ${tab === 'settings' ? 'active' : ''}`}
