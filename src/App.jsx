@@ -6,7 +6,12 @@ import Settings from './components/Settings'
 import {
   addRecord,
   deleteRecord,
+  getCategoryName,
+  loadBudget,
+  loadCategories,
   loadRecords,
+  saveBudget,
+  saveCategories,
   saveRecords,
 } from './lib/storage'
 
@@ -28,10 +33,18 @@ function formatMonthLabel(month) {
 
 export default function App() {
   const [records, setRecords] = useState(() => loadRecords())
+  const [categories, setCategories] = useState(() => loadCategories())
+  const [budget, setBudget] = useState(() => loadBudget())
   const [month, setMonth] = useState(currentMonth())
   const [tab, setTab] = useState('list')
   const [formOpen, setFormOpen] = useState(false)
   const [toast, setToast] = useState('')
+
+  const [query, setQuery] = useState('')
+  const [filterType, setFilterType] = useState('all')
+  const [filterCat, setFilterCat] = useState('all')
+  const [budgetEditing, setBudgetEditing] = useState(false)
+  const [budgetInput, setBudgetInput] = useState('')
 
   const showToast = (text) => {
     setToast(text)
@@ -53,9 +66,31 @@ export default function App() {
     return { income, expense, balance: income - expense }
   }, [monthRecords])
 
+  const searching = query.trim() !== '' || filterType !== 'all' || filterCat !== 'all'
+
+  const listRecords = useMemo(() => {
+    if (!searching) return monthRecords
+    const kw = query.trim().toLowerCase()
+    return records.filter((r) => {
+      if (filterType !== 'all' && r.type !== filterType) return false
+      if (filterCat !== 'all' && r.category !== filterCat) return false
+      if (kw) {
+        const catName = getCategoryName(categories, r.type, r.category)
+        const hay = `${r.note || ''} ${catName} ${r.amount}`.toLowerCase()
+        if (!hay.includes(kw)) return false
+      }
+      return true
+    })
+  }, [searching, records, monthRecords, query, filterType, filterCat, categories])
+
+  const clearFilters = () => {
+    setQuery('')
+    setFilterType('all')
+    setFilterCat('all')
+  }
+
   const handleAdd = (record) => {
     setRecords((prev) => addRecord(prev, record))
-    setFormOpen(false)
     showToast(`已记一笔 ${record.type === 'income' ? '收入' : '支出'} ${record.amount}`)
   }
 
@@ -77,11 +112,36 @@ export default function App() {
     showToast('已清空')
   }
 
+  const handleCategoriesChange = (next) => {
+    saveCategories(next)
+    setCategories(next)
+    showToast('分类已保存')
+  }
+
+  const commitBudget = () => {
+    const raw = String(budgetInput).trim().replace(/[，,\s]/g, '')
+    const value = Number(raw)
+    if (raw === '' || !Number.isFinite(value) || value < 0) {
+      showToast('请输入正确的预算金额')
+      return
+    }
+    saveBudget(value)
+    setBudget(value)
+    setBudgetEditing(false)
+    showToast(value === 0 ? '已取消预算' : '预算已保存')
+  }
+
   const money = (n) =>
     (Math.round(n * 100) / 100).toLocaleString('zh-CN', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })
+
+  const used = summary.expense
+  const pct = budget > 0 ? (used / budget) * 100 : 0
+  const over = budget > 0 && used > budget
+  const warn = budget > 0 && !over && pct >= 80
+  const barColor = over ? '#E24B4A' : warn ? '#BA7517' : '#1D9E75'
 
   return (
     <div className="app">
@@ -116,10 +176,136 @@ export default function App() {
       </header>
 
       <main className="content">
-        {tab === 'list' && <RecordList records={monthRecords} onDelete={handleDelete} />}
-        {tab === 'stats' && <Stats records={monthRecords} />}
+        {tab === 'list' && (
+          <>
+            <div className="budget-card">
+              <div className="budget-view">
+                <div className="budget-top">
+                  <span className="budget-title">{budget > 0 ? '本月预算' : '还没设预算'}</span>
+                  {!budgetEditing && (
+                    <button
+                      className="budget-edit"
+                      onClick={() => {
+                        setBudgetInput(budget > 0 ? String(budget) : '')
+                        setBudgetEditing(true)
+                      }}
+                    >
+                      {budget > 0 ? '修改' : '设置'}
+                    </button>
+                  )}
+                </div>
+                {budgetEditing ? (
+                  <>
+                    <input
+                      className="text-input"
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="输入金额，填 0 表示不设预算"
+                      value={budgetInput}
+                      onChange={(e) => setBudgetInput(e.target.value)}
+                    />
+                    <div className="budget-actions">
+                      <button className="mini-btn" onClick={() => setBudgetEditing(false)}>
+                        取消
+                      </button>
+                      <button className="mini-btn primary" onClick={commitBudget}>
+                        保存
+                      </button>
+                    </div>
+                  </>
+                ) : budget > 0 ? (
+                  <>
+                    <div className="budget-bar">
+                      <div
+                        className="budget-fill"
+                        style={{ width: `${Math.min(pct, 100)}%`, background: barColor }}
+                      />
+                    </div>
+                    <div className="budget-meta">
+                      <span>
+                        已用 {money(used)} / {money(budget)}
+                      </span>
+                      <span style={{ color: barColor, fontWeight: 500 }}>
+                        {over ? `超支 ${money(used - budget)}` : `还剩 ${money(budget - used)}`}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="budget-meta">
+                    <span>设一个月度上限，超支时进度条会变红</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="search-bar">
+              <input
+                className="text-input"
+                type="text"
+                placeholder="搜备注、分类或金额"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+              {searching && (
+                <button className="mini-btn" onClick={clearFilters}>
+                  清除
+                </button>
+              )}
+            </div>
+
+            <div className="filter-row">
+              {[
+                ['all', '全部'],
+                ['expense', '支出'],
+                ['income', '收入'],
+              ].map(([key, label]) => (
+                <button
+                  key={key}
+                  className={`filter-chip ${filterType === key ? 'on' : ''}`}
+                  onClick={() => setFilterType(key)}
+                >
+                  {label}
+                </button>
+              ))}
+              <select
+                className="filter-select"
+                value={filterCat}
+                onChange={(e) => setFilterCat(e.target.value)}
+              >
+                <option value="all">全部分类</option>
+                {[...categories.expense, ...categories.income].map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {searching && (
+              <div className="search-note">筛选结果 {listRecords.length} 笔（不限月份）</div>
+            )}
+
+            <RecordList
+              records={listRecords}
+              categories={categories}
+              onDelete={handleDelete}
+              searching={searching}
+            />
+          </>
+        )}
+
+        {tab === 'stats' && (
+          <Stats monthRecords={monthRecords} allRecords={records} categories={categories} />
+        )}
+
         {tab === 'settings' && (
-          <Settings records={records} onImport={handleImport} onClear={handleClear} />
+          <Settings
+            records={records}
+            categories={categories}
+            onCategoriesChange={handleCategoriesChange}
+            onImport={handleImport}
+            onClear={handleClear}
+          />
         )}
       </main>
 
@@ -140,11 +326,13 @@ export default function App() {
           className={`tab ${tab === 'settings' ? 'active' : ''}`}
           onClick={() => setTab('settings')}
         >
-          备份
+          设置
         </button>
       </nav>
 
-      {formOpen && <RecordForm onClose={() => setFormOpen(false)} onSubmit={handleAdd} />}
+      {formOpen && (
+        <RecordForm categories={categories} onClose={() => setFormOpen(false)} onSubmit={handleAdd} />
+      )}
 
       {toast && <div className="toast">{toast}</div>}
     </div>

@@ -32,16 +32,19 @@ function dayLabel(day) {
     yesterday.getDate()
   ).padStart(2, '0')}`
   if (day === y) return '昨天'
-  const [, m, d] = day.split('-')
-  return `${Number(m)}月${Number(d)}日`
+  const [yy, m, d] = day.split('-')
+  const sameYear = String(yy) === String(today.getFullYear())
+  return sameYear ? `${Number(m)}月${Number(d)}日` : `${yy}年${Number(m)}月${Number(d)}日`
 }
 
-export default function RecordList({ records, onDelete }) {
+export default function RecordList({ records, categories, onDelete, searching }) {
   if (records.length === 0) {
     return (
       <div className="empty">
-        <div className="empty-title">这个月还没有记录</div>
-        <div className="empty-hint">点右下角「记一笔」开始</div>
+        <div className="empty-title">{searching ? '没有符合条件的记录' : '这个月还没有记录'}</div>
+        <div className="empty-hint">
+          {searching ? '换个关键词或清除筛选试试' : '点右下角「记一笔」开始'}
+        </div>
       </div>
     )
   }
@@ -63,9 +66,14 @@ export default function RecordList({ records, onDelete }) {
             </div>
             {list.map((r) => (
               <div className="record-row" key={r.id}>
-                <span className="dot" style={{ background: getCategoryColor(r.type, r.category) }} />
+                <span
+                  className="dot"
+                  style={{ background: getCategoryColor(categories, r.type, r.category) }}
+                />
                 <div className="record-main">
-                  <div className="record-cat">{getCategoryName(r.type, r.category)}</div>
+                  <div className="record-cat">
+                    {getCategoryName(categories, r.type, r.category)}
+                  </div>
                   {r.note && <div className="record-note">{r.note}</div>}
                 </div>
                 <div className={`record-amount ${r.type}`}>

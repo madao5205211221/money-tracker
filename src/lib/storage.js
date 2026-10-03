@@ -1,9 +1,11 @@
 // 数据存储层：所有记账数据存在手机/浏览器本地，不联网。
-// 对外提供：读全部、新增、删除、导出文件、导入文件。
+// 对外提供：记录增删改查、导出导入、分类配置、预算配置。
 
 const STORAGE_KEY = 'money-tracker-records-v1'
+const CAT_KEY = 'money-tracker-categories-v1'
+const BUDGET_KEY = 'money-tracker-budget-v1'
 
-export const CATEGORIES = {
+export const DEFAULT_CATEGORIES = {
   expense: [
     { id: 'food', name: '餐饮', color: '#D85A30' },
     { id: 'transport', name: '交通', color: '#378ADD' },
@@ -21,17 +23,72 @@ export const CATEGORIES = {
   ],
 }
 
-export function getCategoryName(type, id) {
-  const list = CATEGORIES[type] || []
+export const COLOR_CHOICES = [
+  '#D85A30',
+  '#378ADD',
+  '#D4537E',
+  '#BA7517',
+  '#7F77DD',
+  '#1D9E75',
+  '#639922',
+  '#888780',
+]
+
+export function getCategoryName(cats, type, id) {
+  const list = (cats && cats[type]) || DEFAULT_CATEGORIES[type] || []
   const hit = list.find((c) => c.id === id)
   return hit ? hit.name : '其他'
 }
 
-export function getCategoryColor(type, id) {
-  const list = CATEGORIES[type] || []
+export function getCategoryColor(cats, type, id) {
+  const list = (cats && cats[type]) || DEFAULT_CATEGORIES[type] || []
   const hit = list.find((c) => c.id === id)
   return hit ? hit.color : '#888780'
 }
+
+/* ---------- 分类配置 ---------- */
+
+export function loadCategories() {
+  try {
+    const raw = localStorage.getItem(CAT_KEY)
+    if (!raw) return DEFAULT_CATEGORIES
+    const parsed = JSON.parse(raw)
+    return {
+      expense: Array.isArray(parsed.expense) && parsed.expense.length
+        ? parsed.expense
+        : DEFAULT_CATEGORIES.expense,
+      income: Array.isArray(parsed.income) && parsed.income.length
+        ? parsed.income
+        : DEFAULT_CATEGORIES.income,
+    }
+  } catch (e) {
+    console.error('读取分类失败，回退默认', e)
+    return DEFAULT_CATEGORIES
+  }
+}
+
+export function saveCategories(cats) {
+  localStorage.setItem(CAT_KEY, JSON.stringify(cats))
+}
+
+/* ---------- 预算 ---------- */
+
+export function loadBudget() {
+  try {
+    const raw = localStorage.getItem(BUDGET_KEY)
+    if (raw === null) return 0
+    const n = Number(raw)
+    return Number.isFinite(n) && n > 0 ? n : 0
+  } catch (e) {
+    return 0
+  }
+}
+
+export function saveBudget(value) {
+  localStorage.setItem(BUDGET_KEY, String(value))
+}
+
+/* ---------- 记录 ---------- */
 
 export function loadRecords() {
   try {
