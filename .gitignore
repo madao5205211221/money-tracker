@@ -1,9 +1,14 @@
 node_modules
 dist
 vite.config.js.timestamp-*
-android
-android/app/build
+# 安卓工程本体要提交（云端靠它编译），只排除构建产物和缓存
 android/build
+android/app/build
 android/.gradle
+android/.idea
+android/local.properties
+android/app/src/main/assets/public
+*.apk
+*.aab
 *.log
 .DS_Store
