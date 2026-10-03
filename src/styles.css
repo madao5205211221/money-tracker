@@ -39,7 +39,7 @@ button {
 
 .header {
   flex: none;
-  background: #0f6e56;
+  background: var(--theme);
   color: #ffffff;
   padding: 16px 16px 20px;
   padding-top: max(16px, env(safe-area-inset-top));
@@ -54,7 +54,7 @@ button {
 }
 
 .month-btn {
-  background: rgba(255, 255, 255, 0.16);
+  background: var(--theme-shade, rgba(255, 255, 255, 0.16));
   border: none;
   color: #fff;
   width: 32px;
@@ -100,11 +100,11 @@ button {
 }
 
 .summary-value.expense {
-  color: #ffcfcb;
+  color: var(--theme-expense-on, #ffcfcb);
 }
 
 .summary-value.income {
-  color: #b9f0d8;
+  color: var(--theme-income-on, #b9f0d8);
 }
 
 @media (max-width: 380px) {
@@ -123,7 +123,7 @@ button {
 }
 
 .income {
-  color: #0f6e56;
+  color: var(--positive, #0f6e56);
 }
 
 .expense {
@@ -224,7 +224,7 @@ button {
   right: 18px;
   bottom: calc(62px + env(safe-area-inset-bottom));
   z-index: 6;
-  background: #0f6e56;
+  background: var(--theme);
   color: #fff;
   border: none;
   border-radius: 24px;
@@ -256,7 +256,7 @@ button {
 }
 
 .tab.active {
-  color: #0f6e56;
+  color: var(--theme);
   font-weight: 500;
 }
 
@@ -323,9 +323,9 @@ button {
 }
 
 .type-btn.on-income {
-  background: #e1f5ee;
-  border-color: #1d9e75;
-  color: #0f6e56;
+  background: var(--theme-soft, #e1f5ee);
+  border-color: var(--theme);
+  color: var(--theme);
   font-weight: 500;
 }
 
@@ -384,7 +384,7 @@ button {
 
 .primary-btn {
   width: 100%;
-  background: #0f6e56;
+  background: var(--theme);
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -397,8 +397,8 @@ button {
 .ghost-btn {
   width: 100%;
   background: #fff;
-  color: #0f6e56;
-  border: 1px solid #0f6e56;
+  color: var(--theme);
+  border: 1px solid var(--theme);
   border-radius: 10px;
   padding: 12px 0;
   font-size: 15px;
@@ -500,13 +500,13 @@ button {
 .panel-strong {
   font-size: 20px;
   font-weight: 500;
-  color: #0f6e56;
+  color: var(--theme);
 }
 
 .panel-msg {
   margin-top: 12px;
   font-size: 13px;
-  color: #0f6e56;
+  color: var(--theme);
   text-align: center;
 }
 
@@ -588,7 +588,7 @@ button {
 .budget-edit {
   background: none;
   border: none;
-  color: #0f6e56;
+  color: var(--theme);
   font-size: 13px;
   padding: 2px 4px;
 }
@@ -632,8 +632,8 @@ button {
 }
 
 .mini-btn.primary {
-  background: #0f6e56;
-  border-color: #0f6e56;
+  background: var(--theme);
+  border-color: var(--theme);
   color: #fff;
 }
 
@@ -676,8 +676,8 @@ button {
 }
 
 .filter-chip.on {
-  background: #0f6e56;
-  border-color: #0f6e56;
+  background: var(--theme);
+  border-color: var(--theme);
   color: #fff;
 }
 
@@ -716,8 +716,8 @@ button {
 }
 
 .view-btn.on {
-  background: #0f6e56;
-  border-color: #0f6e56;
+  background: var(--theme);
+  border-color: var(--theme);
   color: #fff;
   font-weight: 500;
 }
@@ -759,7 +759,7 @@ button {
 .chart-bar {
   width: 70%;
   max-width: 26px;
-  background: #0f6e56;
+  background: var(--theme);
   border-radius: 4px 4px 0 0;
 }
 
@@ -845,8 +845,8 @@ button {
 /* ---------- 连续记账提示 ---------- */
 
 .saved-tip {
-  background: #e1f5ee;
-  color: #0f6e56;
+  background: var(--theme-soft, #e1f5ee);
+  color: var(--theme);
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 13px;
@@ -873,7 +873,7 @@ button {
 }
 
 .drill-hint {
-  color: #0f6e56;
+  color: var(--theme);
 }
 
 .drill-list {
@@ -962,7 +962,7 @@ button {
 }
 
 .cal-cell.sel {
-  outline: 2px solid #0f6e56;
+  outline: 2px solid var(--theme);
 }
 
 .cal-day {
@@ -1100,4 +1100,27 @@ button {
   font-size: 12px;
   color: #888780;
   margin-top: 6px;
+}
+
+/* ---------- 主题预览 ---------- */
+
+.theme-preview {
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.theme-preview-title {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.theme-preview-nums {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
 }

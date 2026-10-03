@@ -1,8 +1,17 @@
 import React, { useRef, useState } from 'react'
 import CategoryManager from './CategoryManager'
+import ThemePicker from './ThemePicker'
 import { exportToFile, importFromFile } from '../lib/storage'
 
-export default function Settings({ records, categories, onCategoriesChange, onImport, onClear }) {
+export default function Settings({
+  records,
+  categories,
+  theme,
+  onThemeChange,
+  onCategoriesChange,
+  onImport,
+  onClear,
+}) {
   const fileRef = useRef(null)
   const [msg, setMsg] = useState('')
   const [confirming, setConfirming] = useState(false)
@@ -46,6 +55,7 @@ export default function Settings({ records, categories, onCategoriesChange, onIm
         {[
           ['data', '数据备份'],
           ['cats', '分类管理'],
+          ['theme', '主题配色'],
         ].map(([key, label]) => (
           <button
             key={key}
@@ -120,6 +130,8 @@ export default function Settings({ records, categories, onCategoriesChange, onIm
       {section === 'cats' && (
         <CategoryManager categories={categories} onChange={onCategoriesChange} />
       )}
+
+      {section === 'theme' && <ThemePicker theme={theme} onChange={onThemeChange} />}
 
       {section === 'data' && msg && <div className="panel-msg">{msg}</div>}
     </div>

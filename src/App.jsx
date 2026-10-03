@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import RecordForm from './components/RecordForm'
 import RecordList from './components/RecordList'
 import Stats from './components/Stats'
@@ -16,6 +16,7 @@ import {
   saveRecords,
 } from './lib/storage'
 import { loadDebts, saveDebts } from './lib/debts'
+import { applyTheme, loadTheme, saveTheme } from './lib/theme'
 
 function currentMonth() {
   const d = new Date()
@@ -38,6 +39,7 @@ export default function App() {
   const [categories, setCategories] = useState(() => loadCategories())
   const [budget, setBudget] = useState(() => loadBudget())
   const [debts, setDebts] = useState(() => loadDebts())
+  const [theme, setTheme] = useState(() => loadTheme())
   const [month, setMonth] = useState(currentMonth())
   const [tab, setTab] = useState('list')
   const [formOpen, setFormOpen] = useState(false)
@@ -53,6 +55,11 @@ export default function App() {
     setToast(text)
     window.setTimeout(() => setToast(''), 1800)
   }
+
+  // 主题一变就写入 CSS 变量，全站跟着换色
+  useEffect(() => {
+    applyTheme(theme)
+  }, [theme])
 
   const monthRecords = useMemo(
     () => records.filter((r) => String(r.date).slice(0, 7) === month),
@@ -126,6 +133,12 @@ export default function App() {
     setDebts(next)
   }
 
+  const handleThemeChange = (next) => {
+    saveTheme(next)
+    setTheme(next)
+    showToast('主题已切换')
+  }
+
   const commitBudget = () => {
     const raw = String(budgetInput).trim().replace(/[，,\s]/g, '')
     const value = Number(raw)
@@ -149,7 +162,7 @@ export default function App() {
   const pct = budget > 0 ? (used / budget) * 100 : 0
   const over = budget > 0 && used > budget
   const warn = budget > 0 && !over && pct >= 80
-  const barColor = over ? '#E24B4A' : warn ? '#BA7517' : '#1D9E75'
+  const barColor = over ? '#E24B4A' : warn ? '#BA7517' : 'var(--positive, #1d9e75)'
 
   return (
     <div className="app">
@@ -319,6 +332,8 @@ export default function App() {
           <Settings
             records={records}
             categories={categories}
+            theme={theme}
+            onThemeChange={handleThemeChange}
             onCategoriesChange={handleCategoriesChange}
             onImport={handleImport}
             onClear={handleClear}

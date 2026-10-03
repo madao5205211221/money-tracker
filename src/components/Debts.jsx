@@ -151,7 +151,7 @@ export default function Debts({ debts, onSave, onToast }) {
                 className="budget-fill"
                 style={{
                   width: `${Math.min(calc.progress * 100, 100)}%`,
-                  background: '#0f6e56',
+                  background: 'var(--theme, #0f6e56)',
                 }}
               />
             </div>
