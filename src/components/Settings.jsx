@@ -39,28 +39,25 @@ export default function Settings({ records, onImport, onClear }) {
   }
 
   return (
-    <div>
-      <div className="group-title">数据</div>
-      <div className="group">
-        <div className="row">
-          <span className="row-label">记录总数</span>
-          <span className="row-value num">{records.length} 条</span>
-        </div>
-        <div className="row">
-          <span className="row-label">存储位置</span>
-          <span className="row-value">本机</span>
+    <div className="settings">
+      <div className="panel">
+        <div className="panel-title">数据放在哪里</div>
+        <div className="panel-text">
+          所有记录保存在这台设备的浏览器/应用本地存储里，不会上传到任何服务器。
+          清理应用数据或卸载会导致丢失，所以请定期导出备份。
         </div>
       </div>
 
-      <div className="panel-text">
-        所有记录保存在这台设备的本地存储里，不会上传到任何服务器。清理应用数据或卸载会导致丢失，建议定期导出备份。
+      <div className="panel">
+        <div className="panel-title">当前共有</div>
+        <div className="panel-strong">{records.length} 条记录</div>
       </div>
 
-      <button className="ios-btn primary" onClick={handleExport}>
+      <button className="primary-btn" onClick={handleExport}>
         导出备份文件
       </button>
 
-      <button className="ios-btn" onClick={() => fileRef.current.click()}>
+      <button className="ghost-btn" onClick={() => fileRef.current.click()}>
         从备份文件导入
       </button>
       <input
@@ -72,7 +69,7 @@ export default function Settings({ records, onImport, onClear }) {
       />
 
       {!confirming && (
-        <button className="ios-btn danger" onClick={() => setConfirming(true)}>
+        <button className="danger-btn" onClick={() => setConfirming(true)}>
           清空全部记录
         </button>
       )}
@@ -83,8 +80,12 @@ export default function Settings({ records, onImport, onClear }) {
             确定清空全部 {records.length} 条记录？此操作不可恢复，建议先导出备份。
           </div>
           <div className="confirm-row">
-            <button onClick={() => setConfirming(false)}>取消</button>
-            <button onClick={doClear}>确认清空</button>
+            <button className="confirm-no" onClick={() => setConfirming(false)}>
+              取消
+            </button>
+            <button className="confirm-yes" onClick={doClear}>
+              确认清空
+            </button>
           </div>
         </div>
       )}

@@ -10,26 +10,6 @@ import {
   saveRecords,
 } from './lib/storage'
 
-const ICONS = {
-  list: (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-      <path d="M4 7h16M4 12h16M4 17h10" />
-    </svg>
-  ),
-  stats: (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-      <path d="M5 20V11M12 20V5M19 20v-6" />
-    </svg>
-  ),
-  settings: (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 7h16v3H4z" />
-      <path d="M6 10v9h12v-9" />
-      <path d="M10 14h4" />
-    </svg>
-  ),
-}
-
 function currentMonth() {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
@@ -43,7 +23,7 @@ function shiftMonth(month, delta) {
 
 function formatMonthLabel(month) {
   const [y, m] = month.split('-')
-  return `${y}年${Number(m)}月`
+  return `${y} 年 ${Number(m)} 月`
 }
 
 export default function App() {
@@ -70,7 +50,7 @@ export default function App() {
       if (r.type === 'income') income += Number(r.amount) || 0
       else expense += Number(r.amount) || 0
     }
-    return { income, expense, balance: income - expense, count: monthRecords.length }
+    return { income, expense, balance: income - expense }
   }, [monthRecords])
 
   const handleAdd = (record) => {
@@ -105,48 +85,38 @@ export default function App() {
 
   return (
     <div className="app">
-      <header className="navbar">
-        <div className="nav-inner">
-          <div className="nav-month">
-            <button className="month-arrow" onClick={() => setMonth(shiftMonth(month, -1))}>
-              ‹
-            </button>
-            <span className="month-text">{formatMonthLabel(month)}</span>
-            <button className="month-arrow" onClick={() => setMonth(shiftMonth(month, 1))}>
-              ›
-            </button>
+      <header className="header">
+        <div className="month-nav">
+          <button className="month-btn" onClick={() => setMonth(shiftMonth(month, -1))}>
+            ‹
+          </button>
+          <span className="month-label">{formatMonthLabel(month)}</span>
+          <button className="month-btn" onClick={() => setMonth(shiftMonth(month, 1))}>
+            ›
+          </button>
+        </div>
+        <div className="summary-card">
+          <div className="summary-row">
+            <div className="summary-item">
+              <span className="summary-label">支出</span>
+              <span className="summary-value expense">{money(summary.expense)}</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-label">收入</span>
+              <span className="summary-value income">{money(summary.income)}</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-label">结余</span>
+              <span className={`summary-value ${summary.balance >= 0 ? 'income' : 'expense'}`}>
+                {money(summary.balance)}
+              </span>
+            </div>
           </div>
         </div>
       </header>
 
       <main className="content">
-        <div className="page-title">本月结余</div>
-        <div className="hero">
-          <div className="hero-amount num">
-            <span className={summary.balance >= 0 ? 'amount-in' : 'amount-out'}>
-              ¥ {money(summary.balance)}
-            </span>
-          </div>
-        </div>
-
-        <div className="group summary">
-          <div className="summary-cell">
-            <div className="summary-cap">支出</div>
-            <div className="summary-num num amount-out">{money(summary.expense)}</div>
-          </div>
-          <div className="summary-cell">
-            <div className="summary-cap">收入</div>
-            <div className="summary-num num amount-in">{money(summary.income)}</div>
-          </div>
-          <div className="summary-cell">
-            <div className="summary-cap">笔数</div>
-            <div className="summary-num num">{summary.count}</div>
-          </div>
-        </div>
-
-        {tab === 'list' && (
-          <RecordList records={monthRecords} onDelete={handleDelete} />
-        )}
+        {tab === 'list' && <RecordList records={monthRecords} onDelete={handleDelete} />}
         {tab === 'stats' && <Stats records={monthRecords} />}
         {tab === 'settings' && (
           <Settings records={records} onImport={handleImport} onClear={handleClear} />
@@ -154,28 +124,24 @@ export default function App() {
       </main>
 
       {tab === 'list' && (
-        <button className="fab" onClick={() => setFormOpen(true)} aria-label="记一笔">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
+        <button className="fab" onClick={() => setFormOpen(true)}>
+          ＋ 记一笔
         </button>
       )}
 
       <nav className="tabbar">
-        {[
-          ['list', '明细'],
-          ['stats', '统计'],
-          ['settings', '备份'],
-        ].map(([key, label]) => (
-          <button
-            key={key}
-            className={`tab ${tab === key ? 'active' : ''}`}
-            onClick={() => setTab(key)}
-          >
-            {ICONS[key]}
-            <span className="tab-text">{label}</span>
-          </button>
-        ))}
+        <button className={`tab ${tab === 'list' ? 'active' : ''}`} onClick={() => setTab('list')}>
+          明细
+        </button>
+        <button className={`tab ${tab === 'stats' ? 'active' : ''}`} onClick={() => setTab('stats')}>
+          统计
+        </button>
+        <button
+          className={`tab ${tab === 'settings' ? 'active' : ''}`}
+          onClick={() => setTab('settings')}
+        >
+          备份
+        </button>
       </nav>
 
       {formOpen && <RecordForm onClose={() => setFormOpen(false)} onSubmit={handleAdd} />}

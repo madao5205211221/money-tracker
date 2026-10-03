@@ -41,7 +41,7 @@ export default function RecordList({ records, onDelete }) {
     return (
       <div className="empty">
         <div className="empty-title">这个月还没有记录</div>
-        <div className="empty-hint">点右下角的 + 记一笔</div>
+        <div className="empty-hint">点右下角「记一笔」开始</div>
       </div>
     )
   }
@@ -53,37 +53,30 @@ export default function RecordList({ records, onDelete }) {
       {groups.map(([day, list]) => {
         const t = dayTotal(list)
         return (
-          <section key={day}>
-            <div className="group-title" style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>{dayLabel(day)}</span>
+          <section className="day-group" key={day}>
+            <div className="day-head">
+              <span className="day-name">{dayLabel(day)}</span>
               <span className="day-sum">
-                {t.income > 0 && <span className="amount-in">收 {t.income.toFixed(2)}</span>}
-                {t.expense > 0 && <span className="amount-out">支 {t.expense.toFixed(2)}</span>}
+                {t.income > 0 && <span className="income">收 {t.income.toFixed(2)}</span>}
+                {t.expense > 0 && <span className="expense">支 {t.expense.toFixed(2)}</span>}
               </span>
             </div>
-            <div className="group">
-              {list.map((r) => (
-                <div className="record-row" key={r.id}>
-                  <span
-                    className="cat-icon"
-                    style={{ background: getCategoryColor(r.type, r.category) }}
-                  >
-                    {getCategoryName(r.type, r.category).slice(0, 1)}
-                  </span>
-                  <div className="record-main">
-                    <div className="record-cat">{getCategoryName(r.type, r.category)}</div>
-                    {r.note && <div className="record-note">{r.note}</div>}
-                  </div>
-                  <div className={`record-amount num ${r.type === 'income' ? 'amount-in' : 'amount-out'}`}>
-                    {r.type === 'income' ? '+' : '-'}
-                    {(Number(r.amount) || 0).toFixed(2)}
-                  </div>
-                  <button className="del-btn" onClick={() => onDelete(r.id)}>
-                    删除
-                  </button>
+            {list.map((r) => (
+              <div className="record-row" key={r.id}>
+                <span className="dot" style={{ background: getCategoryColor(r.type, r.category) }} />
+                <div className="record-main">
+                  <div className="record-cat">{getCategoryName(r.type, r.category)}</div>
+                  {r.note && <div className="record-note">{r.note}</div>}
                 </div>
-              ))}
-            </div>
+                <div className={`record-amount ${r.type}`}>
+                  {r.type === 'income' ? '+' : '-'}
+                  {(Number(r.amount) || 0).toFixed(2)}
+                </div>
+                <button className="del-btn" onClick={() => onDelete(r.id)}>
+                  删除
+                </button>
+              </div>
+            ))}
           </section>
         )
       })}

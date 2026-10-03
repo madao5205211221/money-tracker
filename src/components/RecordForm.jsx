@@ -48,96 +48,88 @@ export default function RecordForm({ onClose, onSubmit }) {
   return (
     <div className="sheet-mask" onClick={onClose}>
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
-        <div className="grabber" />
-
-        <div className="sheet-nav">
-          <button className="sheet-nav-btn" onClick={onClose}>
-            取消
-          </button>
-          <span className="sheet-nav-title">记一笔</span>
-          <button className="sheet-nav-btn right" onClick={submit}>
-            保存
+        <div className="sheet-head">
+          <span className="sheet-title">记一笔</span>
+          <button className="sheet-close" onClick={onClose}>
+            关闭
           </button>
         </div>
 
-        <div className="sheet-body">
-          <div className="amount-block">
-            <span className="currency">¥</span>
-            <input
-              className="amount-input num"
-              type="text"
-              inputMode="decimal"
-              placeholder="0.00"
-              value={amount}
-              onChange={(e) => {
-                setAmount(e.target.value)
-                if (error) setError('')
-              }}
-            />
-          </div>
+        <div className="type-switch">
+          <button
+            className={`type-btn ${type === 'expense' ? 'on-expense' : ''}`}
+            onClick={() => switchType('expense')}
+          >
+            支出
+          </button>
+          <button
+            className={`type-btn ${type === 'income' ? 'on-income' : ''}`}
+            onClick={() => switchType('income')}
+          >
+            收入
+          </button>
+        </div>
 
+        <div className="field">
+          <label className="field-label">金额</label>
+          <input
+            className="amount-input"
+            type="text"
+            inputMode="decimal"
+            placeholder="0.00"
+            value={amount}
+            onChange={(e) => {
+              setAmount(e.target.value)
+              if (error) setError('')
+            }}
+          />
           {error && <div className="field-error">{error}</div>}
+        </div>
 
-          <div className="segment">
-            <button
-              className={`segment-btn ${type === 'expense' ? 'on exp' : ''}`}
-              onClick={() => switchType('expense')}
-            >
-              支出
-            </button>
-            <button
-              className={`segment-btn ${type === 'income' ? 'on inc' : ''}`}
-              onClick={() => switchType('income')}
-            >
-              收入
-            </button>
-          </div>
-
-          <div className="group">
-            <div className="cat-grid">
-              {cats.map((c) => (
-                <button
-                  key={c.id}
-                  className={`cat-item ${category === c.id ? 'on' : ''}`}
-                  onClick={() => setCategory(c.id)}
-                >
-                  <span
-                    className="cat-circle"
-                    style={{ background: c.color }}
-                  >
-                    {c.name.slice(0, 1)}
-                  </span>
-                  <span className="cat-name">{c.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="group">
-            <div className="row">
-              <span className="row-label">日期</span>
-              <input
-                className="text-input"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                style={{ flex: 1, textAlign: 'right', color: '#8E8E93' }}
-              />
-            </div>
-            <div className="row">
-              <span className="row-label" style={{ flex: 'none', width: 60 }}>
-                备注
-              </span>
-              <input
-                className="text-input"
-                type="text"
-                placeholder="选填，比如 午饭 牛肉面"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-              />
-            </div>
+        <div className="field">
+          <label className="field-label">分类</label>
+          <div className="cat-grid">
+            {cats.map((c) => (
+              <button
+                key={c.id}
+                className="cat-chip"
+                style={
+                  category === c.id
+                    ? { background: c.color, borderColor: c.color, color: '#fff' }
+                    : null
+                }
+                onClick={() => setCategory(c.id)}
+              >
+                {c.name}
+              </button>
+            ))}
           </div>
         </div>
+
+        <div className="field">
+          <label className="field-label">日期</label>
+          <input
+            className="text-input"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </div>
+
+        <div className="field">
+          <label className="field-label">备注（可选）</label>
+          <input
+            className="text-input"
+            type="text"
+            placeholder="比如：午饭 牛肉面"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+          />
+        </div>
+
+        <button className="primary-btn" onClick={submit}>
+          保存
+        </button>
       </div>
     </div>
   )
