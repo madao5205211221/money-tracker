@@ -103,7 +103,10 @@ export default function App() {
 
   const handleAdd = (record) => {
     setRecords((prev) => addRecord(prev, record))
-    showToast(`已记一笔 ${record.type === 'income' ? '收入' : '支出'} ${record.amount}`)
+    const catName = getCategoryName(categories, record.type, record.category)
+    showToast(
+      `已记${record.type === 'income' ? '收入' : '支出'}「${catName}」${record.amount} 元`
+    )
   }
 
   const handleDelete = (id) => {

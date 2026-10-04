@@ -1041,17 +1041,6 @@ button {
   border-color: #2c2c2a;
 }
 
-/* ---------- 连续记账提示 ---------- */
-
-.saved-tip {
-  background: var(--theme-soft, #e1f5ee);
-  color: var(--theme);
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 13px;
-  margin-bottom: 12px;
-}
-
 /* ---------- 分类下钻 ---------- */
 
 .stat-block {

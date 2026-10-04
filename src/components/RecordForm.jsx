@@ -1,5 +1,4 @@
-import React, { useRef, useState } from 'react'
-import { getCategoryName } from '../lib/storage'
+import React, { useState } from 'react'
 
 function todayStr() {
   const d = new Date()
@@ -15,8 +14,6 @@ export default function RecordForm({ categories, onClose, onSubmit }) {
   const [note, setNote] = useState('')
   const [date, setDate] = useState(todayStr())
   const [error, setError] = useState('')
-  const [lastSaved, setLastSaved] = useState(null)
-  const amountRef = useRef(null)
 
   const cats = categories[type]
 
@@ -45,15 +42,8 @@ export default function RecordForm({ categories, onClose, onSubmit }) {
     }
     setError('')
     onSubmit({ type, amount: value, category, note, date })
-
-    // 连续记账：保留类型和分类，只清空金额和备注，方便接着记下一笔
-    setLastSaved({
-      name: getCategoryName(categories, type, category),
-      amount: value,
-    })
-    setAmount('')
-    setNote('')
-    if (amountRef.current) amountRef.current.focus()
+    // 一笔一记：保存后直接关掉，不再停留在表单里
+    onClose()
   }
 
   return (
@@ -62,15 +52,9 @@ export default function RecordForm({ categories, onClose, onSubmit }) {
         <div className="sheet-head">
           <span className="sheet-title">记一笔</span>
           <button className="sheet-close" onClick={onClose}>
-            {lastSaved ? '完成' : '关闭'}
+            关闭
           </button>
         </div>
-
-        {lastSaved && (
-          <div className="saved-tip">
-            已记「{lastSaved.name}」{lastSaved.amount}，接着记下一笔
-          </div>
-        )}
 
         <div className="type-switch">
           <button
@@ -90,7 +74,6 @@ export default function RecordForm({ categories, onClose, onSubmit }) {
         <div className="field">
           <label className="field-label">金额</label>
           <input
-            ref={amountRef}
             className="amount-input"
             type="text"
             inputMode="decimal"
