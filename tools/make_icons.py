@@ -15,12 +15,12 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RES = os.path.join(ROOT, 'android', 'app', 'src', 'main', 'res')
 CACHE = os.path.join(ROOT, 'assets')
 
-# 源裁剪图（用户指定：全身坐姿那张）
-SRC = r'C:\Users\lxy\.workbuddy\clipboard-images\clipboard-2026-10-04T10-51-02-346Z-b8e3fedd.jpg'
+# 源裁剪图（用户指定：头部特写那张）
+SRC = r'C:\Users\lxy\Desktop\1790732338933.png'
 
-# 裁剪窗口（相对原图宽高的比例）—— 只取人物主体，忽略右侧桌面
-#   x: 0.22 ~ 0.79   y: 0.20 ~ 0.92
-BOX = (0.22, 0.20, 0.79, 0.92)
+# 裁剪窗口（相对原图宽高的比例）—— 头部特写，居中取正方形
+#   x: 0.10 ~ 0.92   y: 0.06 ~ 0.88
+BOX = (0.10, 0.06, 0.92, 0.88)
 
 # 自适应图标规范
 ADAPTIVE_TOTAL = 108   # 规范基准

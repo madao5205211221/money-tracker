@@ -129,55 +129,5 @@ export function deleteRecord(records, id) {
   return next
 }
 
-export function exportToFile(records) {
-  const payload = {
-    app: 'money-tracker',
-    version: 1,
-    exportedAt: new Date().toISOString(),
-    records,
-  }
-  const blob = new Blob([JSON.stringify(payload, null, 2)], {
-    type: 'application/json',
-  })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  const stamp = new Date().toISOString().slice(0, 10)
-  a.href = url
-  a.download = `记账备份-${stamp}.json`
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
-}
+// 导出/导入逻辑已迁到 lib/backup.js（区分浏览器下载与安卓公共目录写入）。
 
-export function importFromFile(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      try {
-        const parsed = JSON.parse(reader.result)
-        const list = Array.isArray(parsed) ? parsed : parsed.records
-        if (!Array.isArray(list)) {
-          reject(new Error('文件格式不对，找不到记录列表'))
-          return
-        }
-        const clean = list
-          .filter((r) => r && r.amount && r.date)
-          .map((r) => ({
-            id: r.id || Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
-            type: r.type === 'income' ? 'income' : 'expense',
-            amount: Number(r.amount) || 0,
-            category: r.category || 'other_exp',
-            note: r.note || '',
-            date: String(r.date).slice(0, 10),
-            createdAt: r.createdAt || Date.now(),
-          }))
-        resolve(clean)
-      } catch (e) {
-        reject(new Error('解析失败，文件可能不是有效的备份'))
-      }
-    }
-    reader.onerror = () => reject(new Error('读取文件失败'))
-    reader.readAsText(file)
-  })
-}

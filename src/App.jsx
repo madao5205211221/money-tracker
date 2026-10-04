@@ -4,6 +4,7 @@ import RecordList from './components/RecordList'
 import Stats from './components/Stats'
 import Debts from './components/Debts'
 import Settings from './components/Settings'
+import MonthPicker from './components/MonthPicker'
 import {
   addRecord,
   deleteRecord,
@@ -41,6 +42,7 @@ export default function App() {
   const [debts, setDebts] = useState(() => loadDebts())
   const [theme, setTheme] = useState(() => loadTheme())
   const [month, setMonth] = useState(currentMonth())
+  const [pickerOpen, setPickerOpen] = useState(false)
   const [tab, setTab] = useState('list')
   const [formOpen, setFormOpen] = useState(false)
   const [toast, setToast] = useState('')
@@ -171,7 +173,10 @@ export default function App() {
           <button className="month-btn" onClick={() => setMonth(shiftMonth(month, -1))}>
             ‹
           </button>
-          <span className="month-label">{formatMonthLabel(month)}</span>
+          <button className="month-label-btn" onClick={() => setPickerOpen(true)}>
+            <span className="month-label">{formatMonthLabel(month)}</span>
+            <span className="month-caret">▾</span>
+          </button>
           <button className="month-btn" onClick={() => setMonth(shiftMonth(month, 1))}>
             ›
           </button>
@@ -367,6 +372,18 @@ export default function App() {
 
       {formOpen && (
         <RecordForm categories={categories} onClose={() => setFormOpen(false)} onSubmit={handleAdd} />
+      )}
+
+      {pickerOpen && (
+        <MonthPicker
+          month={month}
+          records={records}
+          onPick={(year, m) => {
+            setMonth(`${year}-${String(m).padStart(2, '0')}`)
+            setPickerOpen(false)
+          }}
+          onClose={() => setPickerOpen(false)}
+        />
       )}
 
       {toast && <div className="toast">{toast}</div>}

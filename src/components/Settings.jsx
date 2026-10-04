@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react'
 import CategoryManager from './CategoryManager'
 import ThemePicker from './ThemePicker'
-import { exportToFile, importFromFile } from '../lib/storage'
+import { importFromText, isNative, exportBackup, shareBackupFile } from '../lib/backup'
 
 export default function Settings({
   records,
@@ -16,21 +16,41 @@ export default function Settings({
   const [msg, setMsg] = useState('')
   const [confirming, setConfirming] = useState(false)
   const [section, setSection] = useState('data')
+  const [saved, setSaved] = useState(null) // { path, uri, filename, shared }
+  const [busy, setBusy] = useState(false)
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (records.length === 0) {
       setMsg('还没有数据可以导出')
       return
     }
-    exportToFile(records)
-    setMsg(`已导出 ${records.length} 条记录，文件在下载目录`)
+    setBusy(true)
+    setMsg('')
+    try {
+      const info = await exportBackup(records)
+      setSaved(info)
+      setMsg('')
+    } catch (err) {
+      setMsg(err.message || '导出失败')
+    }
+    setBusy(false)
+  }
+
+  const handleReshare = async () => {
+    if (!saved || !saved.uri) return
+    try {
+      await shareBackupFile(saved.uri, saved.filename)
+    } catch (e) {
+      setMsg('已取消分享')
+    }
   }
 
   const handlePick = async (e) => {
     const file = e.target.files && e.target.files[0]
     if (!file) return
     try {
-      const list = await importFromFile(file)
+      const text = await file.text()
+      const list = importFromText(text)
       if (list.length === 0) {
         setMsg('这个文件里没有可用记录')
         return
@@ -47,6 +67,7 @@ export default function Settings({
     onClear()
     setConfirming(false)
     setMsg('已清空全部记录')
+    setSaved(null)
   }
 
   return (
@@ -88,9 +109,33 @@ export default function Settings({
             </div>
           </div>
 
-          <button className="primary-btn" onClick={handleExport}>
-            导出备份文件
+          <button className="primary-btn" onClick={handleExport} disabled={busy}>
+            {busy ? '正在导出…' : '导出备份文件'}
           </button>
+
+          {saved && (
+            <div className="saved-box">
+              <div className="saved-title">备份已保存</div>
+              <div className="saved-path-label">文件位置</div>
+              <div className="saved-path">{saved.path}</div>
+              <div className="saved-name">文件名：{saved.filename}</div>
+              {saved.location === 'download' && (
+                <div className="saved-hint">
+                  打开手机的「文件管理」→ 内部存储 → Download 文件夹，就能看到这个文件。
+                </div>
+              )}
+              {saved.location === 'documents' && (
+                <div className="saved-hint">
+                  文件存在应用专属目录。点下面按钮可把文件另存到「下载」或发送到微信 / 电脑。
+                </div>
+              )}
+              {isNative() && saved.uri && (
+                <button className="mini-btn primary saved-share" onClick={handleReshare}>
+                  另存到其他位置 / 发送出去
+                </button>
+              )}
+            </div>
+          )}
 
           <button className="ghost-btn" onClick={() => fileRef.current.click()}>
             从备份文件导入
