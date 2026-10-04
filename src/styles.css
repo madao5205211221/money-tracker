@@ -91,6 +91,11 @@ button {
 
 /* ---------- 月份选择器：12 个月缩略图 ---------- */
 
+/* 整块区域可左右滑动切年；纵向仍交给滚动 */
+.picker-body {
+  touch-action: pan-y;
+}
+
 .year-bar {
   display: flex;
   align-items: center;
