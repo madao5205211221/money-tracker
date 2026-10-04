@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 const SWIPE_MIN = 40 // 触发翻年的最小横向位移（px）
 
@@ -33,32 +33,45 @@ function MiniMonth({ year, month, markedDays, isCurrent, onPick }) {
 export default function MonthPicker({ month, records, onPick, onClose }) {
   const [y] = month.split('-').map(Number)
   const [viewYear, setViewYear] = useState(y)
+  const [yearPanel, setYearPanel] = useState(false) // 年份列表是否展开
 
   // 手势滑动切换年份
   const touchX = useRef(null)
+  const yearGridRef = useRef(null)
 
-  // 年份区间：从「最早有记录的年份」到「今年」，且至少往前留 5 年，
-  // 保证没有记录的年份也能翻过去（否则只用一个年份时会卡死）
-  const yearRange = useMemo(() => {
+  // 年份可翻范围：往前至少 20 年、往后至少 10 年，
+  // 若记录里有更早/更晚的年份则自动扩到那里。两个方向都不设「今年」这种硬上限。
+  const { minYear, maxYear } = useMemo(() => {
     const thisYear = new Date().getFullYear()
-    const recordYears = records
+    const years = records
       .map((r) => Number(String(r.date).slice(0, 4)))
       .filter((n) => Number.isFinite(n) && n > 1900)
-    const earliest = recordYears.length ? Math.min(...recordYears) : thisYear
-    const latest = recordYears.length ? Math.max(...recordYears) : thisYear
-    const start = Math.min(earliest, thisYear - 5)
-    const end = Math.max(latest, thisYear)
-    const list = []
-    for (let yr = start; yr <= end; yr += 1) list.push(yr)
-    return list
+    const earliest = years.length ? Math.min(...years) : thisYear
+    const latest = years.length ? Math.max(...years) : thisYear
+    return {
+      minYear: Math.min(earliest, thisYear - 20),
+      maxYear: Math.max(latest, thisYear + 10),
+    }
   }, [records])
 
-  const minYear = yearRange[0]
-  const maxYear = yearRange[yearRange.length - 1]
+  const allYears = useMemo(() => {
+    const list = []
+    for (let yr = minYear; yr <= maxYear; yr += 1) list.push(yr)
+    return list
+  }, [minYear, maxYear])
 
-  const goYear = (delta) => {
-    setViewYear((prev) => Math.min(maxYear, Math.max(minYear, prev + delta)))
-  }
+  const clamp = (yr) => Math.min(maxYear, Math.max(minYear, yr))
+  const goYear = (delta) => setViewYear((prev) => clamp(prev + delta))
+
+  // 展开年份列表时，把当前年份滚到中间
+  useEffect(() => {
+    const box = yearGridRef.current
+    if (!yearPanel || !box) return
+    const active = box.querySelector('.year-cell.on')
+    if (active) {
+      box.scrollTop = active.offsetTop - box.clientHeight / 2 + active.clientHeight / 2
+    }
+  }, [yearPanel])
 
   // 每年每月：哪些天有记录
   const marksByMonth = useMemo(() => {
@@ -75,6 +88,7 @@ export default function MonthPicker({ month, records, onPick, onClose }) {
   }, [records, viewYear])
 
   const onTouchStart = (e) => {
+    if (yearPanel) return
     touchX.current = e.touches[0].clientX
   }
 
@@ -88,7 +102,6 @@ export default function MonthPicker({ month, records, onPick, onClose }) {
   }
 
   const thisMonth = `${new Date().getFullYear()}-${new Date().getMonth() + 1}`
-  const chipYears = yearRange.slice(-10).reverse() // 最多显示最近 10 个年份胶囊
 
   return (
     <div className="sheet-mask" onClick={onClose}>
@@ -110,10 +123,14 @@ export default function MonthPicker({ month, records, onPick, onClose }) {
             >
               ‹
             </button>
-            <div className="year-current">
+            <button
+              className="year-current year-current-btn"
+              onClick={() => setYearPanel((p) => !p)}
+            >
               <span className="year-num">{viewYear}</span>
               <span className="year-unit">年</span>
-            </div>
+              <span className="year-caret">{yearPanel ? '▴' : '▾'}</span>
+            </button>
             <button
               className="year-step"
               disabled={viewYear >= maxYear}
@@ -123,33 +140,42 @@ export default function MonthPicker({ month, records, onPick, onClose }) {
             </button>
           </div>
 
-          <div className="year-chips">
-            {chipYears.map((yr) => (
-              <button
-                key={yr}
-                className={`year-chip ${yr === viewYear ? 'on' : ''}`}
-                onClick={() => setViewYear(yr)}
-              >
-                {yr}
-              </button>
-            ))}
-          </div>
-
-          <div className="mini-wrap">
-            {Array.from({ length: 12 }, (_, i) => i + 1).map((mm) => (
-              <MiniMonth
-                key={mm}
-                year={viewYear}
-                month={mm}
-                markedDays={marksByMonth.get(mm) || new Set()}
-                isCurrent={`${viewYear}-${mm}` === thisMonth}
-                onPick={onPick}
-              />
-            ))}
-          </div>
+          {yearPanel ? (
+            <div className="year-grid" ref={yearGridRef}>
+              {allYears.map((yr) => (
+                <button
+                  key={yr}
+                  className={`year-cell ${yr === viewYear ? 'on' : ''}`}
+                  onClick={() => {
+                    setViewYear(yr)
+                    setYearPanel(false)
+                  }}
+                >
+                  {yr}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="mini-wrap">
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((mm) => (
+                <MiniMonth
+                  key={mm}
+                  year={viewYear}
+                  month={mm}
+                  markedDays={marksByMonth.get(mm) || new Set()}
+                  isCurrent={`${viewYear}-${mm}` === thisMonth}
+                  onPick={onPick}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
-        <div className="picker-hint">左右滑动切换年份 · 点某个月直接跳过去</div>
+        <div className="picker-hint">
+          {yearPanel
+            ? '点一个年份直接跳过去'
+            : '左右滑动换年份 · 点上方年份可挑选 · 点月份跳过去'}
+        </div>
       </div>
     </div>
   )

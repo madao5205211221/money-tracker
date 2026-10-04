@@ -128,6 +128,19 @@ button {
   justify-content: center;
 }
 
+/* 年份数字本身就是按钮，点一下展开年份列表 */
+.year-current-btn {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 4px 10px;
+  min-width: 108px;
+}
+
+.year-current-btn:active {
+  background: #f1efe8;
+}
+
 .year-num {
   font-size: 22px;
   font-weight: 600;
@@ -139,28 +152,39 @@ button {
   color: #5f5e5a;
 }
 
-.year-chips {
-  display: flex;
+.year-caret {
+  font-size: 11px;
+  color: #888780;
+  margin-left: 3px;
+  align-self: center;
+}
+
+/* 年份列表：一屏网格，可直接点选任意年份 */
+.year-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 12px;
+  max-height: 296px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 2px 6px;
+  margin-bottom: 8px;
 }
 
-.year-chip {
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  background: #fff;
+.year-cell {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #fbfbf9;
   color: #444441;
-  border-radius: 14px;
-  padding: 3px 12px;
-  font-size: 13px;
+  border-radius: 8px;
+  padding: 10px 0;
+  font-size: 14px;
 }
 
-.year-chip.on {
+.year-cell.on {
   background: var(--theme);
   border-color: var(--theme);
   color: #fff;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .mini-wrap {
