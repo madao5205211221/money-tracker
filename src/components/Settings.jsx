@@ -15,7 +15,7 @@ export default function Settings({
   const fileRef = useRef(null)
   const [msg, setMsg] = useState('')
   const [confirming, setConfirming] = useState(false)
-  const [section, setSection] = useState('data')
+  const [section, setSection] = useState('theme')
   const [saved, setSaved] = useState(null) // { path, uri, filename, shared }
   const [busy, setBusy] = useState(false)
 
@@ -74,9 +74,9 @@ export default function Settings({
     <div className="settings">
       <div className="view-switch">
         {[
-          ['data', '数据备份'],
-          ['cats', '分类管理'],
           ['theme', '主题配色'],
+          ['cats', '分类管理'],
+          ['data', '数据备份'],
         ].map(([key, label]) => (
           <button
             key={key}
