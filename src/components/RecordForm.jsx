@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import DatePicker from './DatePicker'
 
 function todayStr() {
   const d = new Date()
@@ -109,12 +110,7 @@ export default function RecordForm({ categories, onClose, onSubmit }) {
 
         <div className="field">
           <label className="field-label">日期</label>
-          <input
-            className="text-input"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
+          <DatePicker value={date} onChange={setDate} />
         </div>
 
         <div className="field">
