@@ -42,6 +42,8 @@ export default function ThemePicker({ theme, onChange }) {
       <div className="cat-add-row">
         <input
           className="text-input"
+          type="text"
+          inputMode="text"
           placeholder="自定义色值，如 #20ae66"
           value={custom}
           onChange={(e) => setCustom(e.target.value)}

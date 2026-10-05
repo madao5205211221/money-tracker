@@ -473,6 +473,87 @@ button {
   font-size: 14px;
 }
 
+/* ---------- 带应用内数字键盘的弹层（记一笔） ---------- */
+
+.sheet--pad {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+
+/* 上半部分可以滚动，键盘固定在底部 */
+.sheet-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+
+/* 紧跟键盘上方的操作条（保存按钮） */
+.sheet-foot {
+  flex: none;
+  padding: 10px 0 12px;
+  border-top: 0.5px solid rgba(0, 0, 0, 0.08);
+}
+
+.sheet-foot .primary-btn {
+  margin-top: 0;
+}
+
+.kpad {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+  padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+  border-top: 0.5px solid rgba(0, 0, 0, 0.08);
+}
+
+.kpad-key {
+  height: 46px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #fff;
+  color: #2c2c2a;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kpad-key:active {
+  background: #f1efe8;
+}
+
+.kpad-fn {
+  background: #f4f5f3;
+  color: #5f5e5a;
+  font-size: 17px;
+}
+
+.kpad-done {
+  grid-row: span 2;
+  background: var(--theme);
+  border-color: var(--theme);
+  color: #fff;
+  font-size: 15px;
+}
+
+.kpad-done:active {
+  background: var(--theme);
+  opacity: 0.85;
+}
+
+.kpad-zero {
+  grid-column: span 3;
+}
+
+/* ---------- 带应用内数字键盘的弹层结束 ---------- */
+
 .type-switch {
   display: flex;
   gap: 8px;
@@ -523,6 +604,12 @@ button {
   padding: 4px 0;
   outline: none;
   background: transparent;
+}
+
+/* 数字键盘弹起时高亮金额栏，提示它正在接收输入 */
+.amount-input.picking {
+  border-bottom-color: var(--theme);
+  caret-color: var(--theme);
 }
 
 .text-input {

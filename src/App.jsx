@@ -271,6 +271,7 @@ export default function App() {
               <input
                 className="text-input"
                 type="text"
+                inputMode="text"
                 placeholder="搜备注、分类或金额"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}

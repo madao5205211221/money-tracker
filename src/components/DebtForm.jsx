@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { DEBT_TYPES } from '../lib/debts'
+import DatePicker from './DatePicker'
 
 function todayStr() {
   const d = new Date()
@@ -71,6 +72,8 @@ export default function DebtForm({ initial, onClose, onSubmit }) {
           <label className="field-label">名称</label>
           <input
             className="text-input"
+            type="text"
+            inputMode="text"
             placeholder="比如：招行房贷 / 欠表哥"
             value={name}
             onChange={(e) => {
@@ -148,12 +151,7 @@ export default function DebtForm({ initial, onClose, onSubmit }) {
           <>
             <div className="field">
               <label className="field-label">起息日</label>
-              <input
-                className="text-input"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
+              <DatePicker value={startDate} onChange={setStartDate} />
             </div>
             <div className="field">
               <label className="field-label">已还本金</label>
@@ -240,6 +238,8 @@ export default function DebtForm({ initial, onClose, onSubmit }) {
           <label className="field-label">备注（可选）</label>
           <input
             className="text-input"
+            type="text"
+            inputMode="text"
             placeholder="比如：每月 10 号扣款"
             value={note}
             onChange={(e) => setNote(e.target.value)}

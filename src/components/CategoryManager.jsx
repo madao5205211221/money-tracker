@@ -62,6 +62,8 @@ export default function CategoryManager({ categories, onChange }) {
           />
           <input
             className="text-input"
+            type="text"
+            inputMode="text"
             defaultValue={c.name}
             onBlur={(e) => {
               const v = e.target.value.trim()
@@ -90,6 +92,8 @@ export default function CategoryManager({ categories, onChange }) {
         <div className="cat-add-row">
           <input
             className="text-input"
+            type="text"
+            inputMode="text"
             placeholder="分类名称"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
